@@ -4,13 +4,41 @@
   <meta charset="utf-8">
   <script src=libsundown.so.js></script>
   <style>
+    body {
+      max-width: 600px;
+      margin: 40px auto;
+    }
     textarea {
+      width: 100%;
       font-family: monospace;
     }
   </style>
 </head>
 <body>
-  <textarea id=input rows=24 cols=80 placeholder="Type Markdown here…"></textarea>
+  <textarea id=input rows=24 placeholder="Type Markdown here…">
+# What is this?
+
+This page uses [Sundown](https://github.com/vmg/sundown) and
+[Emscripten](https://github.com/kripken/emscripten) to provide a live
+[Markdown](http://daringfireball.net/projects/markdown/) editor.
+
+## Huh?
+
+Emscripten basically works like this:
+
+1. [Clang](http://clang.llvm.org) compiles C and C++ code to [LLVM
+   bitcode](http://llvm.org/releases/3.1/docs/BitCodeFormat.html).
+2. A [custom
+   compiler](https://github.com/kripken/emscripten/blob/master/src/compiler.js)
+   hosted in [node.js](http://nodejs.org) compiles the bitcode to JavaScript.
+3. Optionally, the [Closure
+   Compiler](https://developers.google.com/closure/compiler/) is used to
+   optimize the JavaScript.
+
+This makes it really easy to use C and C++ libraries on the web. It's even been
+used to convert whole programs to JavaScript and web technologies, like
+[DOOM](http://www.youtube.com/watch?v=WDUPZRQf7oc).
+  </textarea>
   <div id=output></div>
   <script>
     var input = document.getElementById('input');
@@ -22,7 +50,7 @@
     var flags = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 8);
     var markdown = _sd_markdown_new(flags, 16, callbacks, options);
 
-    input.addEventListener('input', function() {
+    function renderMarkdown() {
       var text = input.value;
       var utf8CharacterArray = intArrayFromString(text);
       var utf8CText = allocate(utf8CharacterArray, 'i8', ALLOC_NORMAL);
@@ -32,7 +60,10 @@
       _free(buffer);
       var result = Pointer_stringify(utf8CResult);
       output.innerHTML = result;
-    });
+    }
+
+    input.addEventListener('input', renderMarkdown);
+    renderMarkdown();
   </script>
 </body>
 </html>
