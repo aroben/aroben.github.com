@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src=libsundown.so.js></script>
+  <style>
+    textarea {
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <textarea id=input rows=24 cols=80 placeholder="Type Markdown here…"></textarea>
+  <div id=output></div>
+  <script>
+    var input = document.getElementById('input');
+    var output = document.getElementById('output');
+
+    var callbacks = _malloc(26 * 4);
+    var options = _malloc(5 * 4);
+    _sdhtml_renderer(callbacks, options, 0);
+    var flags = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 8);
+    var markdown = _sd_markdown_new(flags, 16, callbacks, options);
+
+    input.addEventListener('input', function() {
+      var text = input.value;
+      var utf8CharacterArray = intArrayFromString(text);
+      var utf8CText = allocate(utf8CharacterArray, 'i8', ALLOC_NORMAL);
+      var buffer = _bufnew(utf8CharacterArray.length);
+      _sd_markdown_render(buffer, utf8CText, utf8CharacterArray.length, markdown);
+      var utf8CResult = _bufcstr(buffer);
+      _free(buffer);
+      var result = Pointer_stringify(utf8CResult);
+      output.innerHTML = result;
+    });
+  </script>
+</body>
+</html>
